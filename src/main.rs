@@ -1,6 +1,7 @@
 // modified from [serenity-rs example](https://github.com/serenity-rs/serenity#example-bot)
 use serenity::client::Client;
 use serenity::model::channel::Message;
+use serenity::model::gateway::Ready;
 use serenity::prelude::{EventHandler, Context};
 use serenity::framework::standard::{
     StandardFramework,
@@ -19,7 +20,33 @@ use std::env;
 
 struct Handler;
 
-impl EventHandler for Handler {}
+fn log(msg: &Message) {
+    println!("{}, {}#{}\n    {}", msg.timestamp, msg.author.name, msg.author.discriminator, msg.content);
+}
+
+impl EventHandler for Handler {
+    fn ready(&self, ctx: Context, _data: Ready) {
+        // status: https://docs.rs/serenity/0.8.6/serenity/prelude/struct.Context.html#method.set_presence
+        use serenity::model::gateway::Activity;
+        use serenity::model::user::OnlineStatus;
+        let activity = Activity::playing("with your psyche...");
+        let status = OnlineStatus::DoNotDisturb; // TODO: change to Offline
+        ctx.set_presence(Some(activity), status);
+
+        println!("Bot ready.");
+    }
+    fn message(&self, _ctx: Context, msg: Message) {
+        log(&msg);
+    }
+}
+
+#[command]
+fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
+    log(&msg);
+    msg.reply(ctx, "Pong!")?;
+
+    Ok(())
+}
 
 fn main() {
     // Login with a bot token from the environment
@@ -30,20 +57,9 @@ fn main() {
         .group(&GENERAL_GROUP));
 
     // start listening for events by starting a single shard
+    println!("Starting bot...");
     if let Err(why) = client.start() {
         println!("An error occurred while running the client: {:?}", why);
     }
-}
-
-fn log(msg: &Message) {
-    println!("{}: Message from {}#{}\n    {}", msg.timestamp, msg.author.name, msg.author.discriminator, msg.content);
-}
-
-#[command]
-fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
-    log(&msg);
-    msg.reply(ctx, "Pong!")?;
-
-    Ok(())
 }
 
