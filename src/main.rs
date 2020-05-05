@@ -21,7 +21,14 @@ use std::env;
 struct Handler;
 
 fn log(msg: &Message) {
-    println!("{}, {}#{}\n    {}", msg.timestamp, msg.author.name, msg.author.discriminator, msg.content);
+    println!("{time}, {name}#{tag}, {userid}, {channelid}\n    {content}",
+             time=msg.timestamp,
+             name=msg.author.name,
+             tag=msg.author.discriminator,
+             userid=msg.author.id,
+             channelid=msg.channel_id,
+             content=msg.content
+             );
 }
 
 impl EventHandler for Handler {
@@ -35,14 +42,22 @@ impl EventHandler for Handler {
 
         println!("Bot ready.");
     }
-    fn message(&self, _ctx: Context, msg: Message) {
+    fn message(&self, ctx: Context, msg: Message) {
+        use serenity::model::error::Error::InvalidPermissions;
         log(&msg);
+        if msg.is_own(&ctx) {
+            return;
+        }
+        if msg.is_private() {
+            msg.reply(ctx, "Pong!");
+        } else {
+            msg.react(ctx, '🥗');
+        }
     }
 }
 
 #[command]
 fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
-    log(&msg);
     msg.reply(ctx, "Pong!")?;
 
     Ok(())
