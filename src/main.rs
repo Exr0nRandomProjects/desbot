@@ -43,13 +43,12 @@ impl EventHandler for Handler {
         println!("Bot ready.");
     }
     fn message(&self, ctx: Context, msg: Message) {
-        use serenity::model::error::Error::InvalidPermissions;
         log(&msg);
         if msg.is_own(&ctx) {
             return;
         }
         if msg.is_private() {
-            msg.reply(ctx, "Pong!");
+            msg.reply(ctx, "Pong!");    // TODO: how to handle some errors only? serenity::model::error::Error?
         } else {
             msg.react(ctx, '🥗');
         }
