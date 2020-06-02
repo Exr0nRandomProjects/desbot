@@ -48,9 +48,9 @@ impl EventHandler for Handler {
             return;
         }
         if msg.is_private() {
-            msg.reply(ctx, "Pong!");    // TODO: how to handle some errors only? serenity::model::error::Error?
+            msg.reply(ctx, "Pong!").expect("Unable to reply DM");    // TODO: how to handle some errors only? serenity::model::error::Error?
         } else {
-            msg.react(ctx, '🥗');
+            msg.react(ctx, '🥗').expect("Cannot react to guild message");
         }
     }
 }
